@@ -9,7 +9,7 @@ function App() {
     setIsHome(false)
   }
   return (
-    <div>
+    <div className='QuizContainer'>
       {isHome && <Home startQuiz={startQuiz} />}
       
       {!isHome && <Quiz />}

@@ -1,45 +1,53 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react';
 import Choice from './Choice';
-export default function Question_and_Answers(props){
 
-    function decodeHtmlEntities(text) {
-        const textArea = document.createElement('textarea');
-        textArea.innerHTML = text;
-        return textArea.value;
-    }
+export default function Question_and_Answers(props) {
+    let { questionData, questionIndex, onAnswerSelect, isChecked } = props;
+    const [selectedAnswer, setSelectedAnswer] = useState(null);
+    const [shuffledAnswers, setShuffledAnswers] = useState([]);
+
+
+    useEffect(() => {
+        const answers = [...questionData.incorrect_answers, questionData.correct_answer];
+        setShuffledAnswers(shuffleArray(answers));
+    }, [questionData]);
+
     function shuffleArray(array) {
-        // Create a copy of the array to avoid mutating the original one
         let shuffledArray = array.slice();
-      
         for (let i = shuffledArray.length - 1; i > 0; i--) {
-          // Generate a random index between 0 and i (inclusive)
-          const j = Math.floor(Math.random() * (i + 1));
-      
-          // Swap the elements at index i and j
-          [shuffledArray[i], shuffledArray[j]] = [shuffledArray[j], shuffledArray[i]];
+            const j = Math.floor(Math.random() * (i + 1));
+            [shuffledArray[i], shuffledArray[j]] = [shuffledArray[j], shuffledArray[i]];
         }
-      
         return shuffledArray;
-      }
+    }
+    function decodeHtmlEntities(text) {
+      const textArea = document.createElement('textarea');
+      textArea.innerHTML = text;
+      return textArea.value;
+  }
+    function handleAnswerSelect(answer) {
+        setSelectedAnswer(answer); // Update the local state
+        onAnswerSelect(questionIndex, answer); // Notify the parent of the selected answer
+        
+        
+    }
 
-      const questionData = props.questionData
-      const questionText = questionData.question
-      const answers = questionData.incorrect_answers
-      const correct_answer = questionData.correct_answer
-      answers.push(correct_answer)
-      const shuffledAnswers = shuffleArray(answers)
     return (
-    <div className="QA">
-        <p className="question">{decodeHtmlEntities(questionText)}</p>
-        <ul className="answers">
-            {shuffledAnswers.map(answer=>{
-                return (
-                    // for each answer, i return a <Choice> component, with a prop that tells me if it is the correct answer. the choice should change color if selected
-                    <Choice value={decodeHtmlEntities(answer)} correct={correct_answer == answer} selected={false} />
-                )
-            })}
-        </ul>
-        <hr />
-    </div>
-  )
+        <div className="QA">
+            <p className="question">{decodeHtmlEntities(questionData.question)}</p>
+            <ul className="answers">
+                {shuffledAnswers.map((answer) => (
+                    <Choice
+                        key={answer}
+                        value={decodeHtmlEntities(answer)}
+                        correct={questionData.correct_answer === answer}
+                        selected={selectedAnswer === answer}
+                        onSelect={() => handleAnswerSelect(answer)}
+                        isChecked={isChecked}
+                    />
+                ))}
+            </ul>
+            <hr />
+        </div>
+    );
 }
